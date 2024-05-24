@@ -5,7 +5,7 @@
 
 #define Firmware 240524
 
-#define EEPROM_ConfVersion 2
+#define EEPROM_ConfVersion 4
 
 struct conf {
   uint8_t ConfVersion;
@@ -15,6 +15,7 @@ struct conf {
   float Gain;
   float ValMin;
   float ValMax;
+  uint16_t Boudrate;
 };
 
 conf Settings;
@@ -46,6 +47,7 @@ void Stepper_Drive(float _val);
 void Serial_clear();
 void Can_Debug(can_frame canMsg);
 void Can_Decode(can_frame canMsg);
+void CAN_reset();
 
 void setup() {
   EEPROM.get(0, Settings);
@@ -54,13 +56,12 @@ void setup() {
     Settings.CANID = 0;
     Settings.Position = 0;
     Settings.Bits = 0;
-    Settings.Gain = 0.0;
+    Settings.Gain = 1.0;
     Settings.ValMin = 0.0;
     Settings.ValMax = 0.0;
+    Settings.Boudrate = 500;
   }
-  CAN.reset();
-  CAN.setBitrate(CAN_500KBPS, MCP_8MHZ);
-  CAN.setNormalMode();
+  CAN_reset();
   stepper.setSpeed(60);   // set the motor speed to 30 RPM (360 PPS aprox.).
   stepper.step(-670);     // Reset Position.
   Serial.begin(115200);
@@ -75,6 +76,12 @@ void loop() {
     if((CanDebug && canMsg.can_id == Settings.CANID) || (CanDebug && Settings.CANID == 0)){ Can_Debug(canMsg); }
     if(canMsg.can_id == Settings.CANID){ Can_Decode(canMsg);}
   }
+}
+
+void CAN_reset(){
+  CAN.reset();
+  CAN.setBitrate(Settings.Boudrate, MCP_8MHZ); // Change to correct Clock!
+  CAN.setNormalMode();
 }
 
 void Config(){
@@ -101,31 +108,32 @@ void Config(){
   } else { menu_option = 0; }
 
   switch (menu_option){
-    //case 1: Settings.CANID = menu_option_val_Int; Config();break;
     case 1: Settings.CANID = strtol(menu_option_val_String.c_str(),NULL,16); Config();break;
     case 2: Settings.Position = menu_option_val_Int; Config();break;
     case 3: Settings.Bits = menu_option_val_Int; Config();break;
     case 4: Settings.Gain = menu_option_val_Float; Config();break;
     case 5: Settings.ValMin = menu_option_val_Float; Config();break;
     case 6: Settings.ValMax = menu_option_val_Float; Config();break;
-    case 7: Stepper_Drive(constrain(menu_option_val_Int,0,100)); Config();break;
-    case 8: CanDebug = !CanDebug; Config(); break;
-    case 9: ValDebug = !ValDebug; Config(); break;
-    case 10: EEPROM.put(0, Settings); Config(); Serial.println(":::::Saved:::::");break;
+    case 7: Settings.Boudrate = menu_option_val_Int; CAN_reset(); Config();break;
+    case 8: Stepper_Drive(constrain(menu_option_val_Int,0,100)); Config();break;
+    case 9: CanDebug = !CanDebug; Config(); break;
+    case 10: ValDebug = !ValDebug; Config(); break;
+    case 11: EEPROM.put(0, Settings); Config(); Serial.println(":::::Saved:::::");break;
     default:
       Serial_clear();
       Serial.print("Firmware: "); Serial.println(Firmware);
       Serial.println("----------------------------------");
-      Serial.print("[1] CAN ID (HEX): ");Serial.println(Settings.CANID, HEX);
-      Serial.print("[2] Position:     ");Serial.println(Settings.Position);
-      Serial.print("[3] Bits:         ");Serial.println(Settings.Bits);
-      Serial.print("[4] Gain:         ");Serial.println(Settings.Gain);
-      Serial.print("[5] Minimum:      ");Serial.println(Settings.ValMin);
-      Serial.print("[6] Maximum:      ");Serial.println(Settings.ValMax);
-      Serial.print("[7] Gauge Test (%)");Serial.println();
-      Serial.print("[8] CAN Test:     "+String(CanDebug?"ON":"OFF"));Serial.println();
-      Serial.print("[9] Value Test:   "+String(ValDebug?"ON":"OFF"));Serial.println();
-      Serial.print("[10] Safe Settings!");Serial.println();
+      Serial.print("[1]  CAN ID (HEX):   ");Serial.println(Settings.CANID, HEX);
+      Serial.print("[2]  Position:       ");Serial.println(Settings.Position);
+      Serial.print("[3]  Bits:           ");Serial.println(Settings.Bits);
+      Serial.print("[4]  Gain:           ");Serial.println(Settings.Gain);
+      Serial.print("[5]  Minimum:        ");Serial.println(Settings.ValMin);
+      Serial.print("[6]  Maximum:        ");Serial.println(Settings.ValMax);
+      Serial.print("[7]  Boud Rate (KB): ");Serial.println(Settings.Boudrate);
+      Serial.print("[8]  Gauge Test (%)");Serial.println();
+      Serial.print("[9]  CAN Test:       "+String(CanDebug?"ON":"OFF"));Serial.println();
+      Serial.print("[10] Value Test:     "+String(ValDebug?"ON":"OFF"));Serial.println();
+      Serial.print("[11] Safe Settings!");Serial.println();
       break;
   }
 }

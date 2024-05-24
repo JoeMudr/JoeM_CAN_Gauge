@@ -1,0 +1,18 @@
+﻿Designator,Footprint,Quantity,Value,LCSC Part #
+"C1, C2, C3, C4, C5",0603,5,100nF,C14663
+C6,CP_Elec_6.3x7.7,1,220uF,C4747974
+"D1, D2, D3, D4, D5, D6",LED_PLCC_2835_Handsoldering,6,LED Weiß,
+"D7, D8, D9",LED_PLCC_2835_Handsoldering,3,LED Rot,
+J1,PinHeader_1x06_P2.54mm_Vertical,1,FTDI-Port,
+J2,PinHeader_1x02_P2.54mm_Vertical,1,CAN,
+J3,PinHeader_1x01_P2.54mm_Vertical,1,LED 12V,
+J4,PinHeader_1x01_P2.54mm_Vertical,1,12V,
+J5,PinHeader_1x01_P2.54mm_Vertical,1,GND,
+M1,StepperMotor,1,Stepper_Motor,
+"R1, R2, R6",0603,3,10k,C25804
+"R3, R4, R5",0805,3,510,C17734
+U1,TQFP-32_7x7mm,1,ATMEGA328P-AU,ATMEGA328P-AU
+U2,TSSOP-20_4.4x6.5mm_P0.65mm,1,MCP2515-xST,
+U3,SOIC-8_3.9x4.9mm_P1.27mm,1,MCP2551-I-SN,C49558
+U4,SOT-89-3,1,L78L05_SOT89,C347258
+"Y1, Y2",Crystal_SMD_2016-4Pin_2.0x1.6mm,2,16MHz,C2965579

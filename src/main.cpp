@@ -3,7 +3,7 @@
 #include <Stepper.h>
 #include <EEPROM.h>
 
-#define Firmware 240524
+#define Firmware 240611
 
 #define EEPROM_ConfVersion 5
 

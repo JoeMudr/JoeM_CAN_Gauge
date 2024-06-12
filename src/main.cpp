@@ -5,7 +5,7 @@
 
 #define Firmware 240524
 
-#define EEPROM_ConfVersion 4
+#define EEPROM_ConfVersion 5
 
 struct conf {
   uint8_t ConfVersion;
@@ -13,6 +13,7 @@ struct conf {
   uint8_t Position;
   int8_t Bits;
   float Gain;
+  int16_t Offset;
   float ValMin;
   float ValMax;
   uint16_t Boudrate;
@@ -24,8 +25,8 @@ can_frame canMsg;
 MCP2515 CAN(10); // CS PIN 10
 
 #define  STEPS  720    // steps per revolution (630 = limited to 315°)
-#define  COIL1  7
-#define  COIL2  6
+#define  COIL1  6
+#define  COIL2  7
 #define  COIL3  8
 #define  COIL4  9
 #define  max_Steps 630
@@ -57,6 +58,7 @@ void setup() {
     Settings.Position = 0;
     Settings.Bits = 0;
     Settings.Gain = 1.0;
+    Settings.Offset = 0;
     Settings.ValMin = 0.0;
     Settings.ValMax = 0.0;
     Settings.Boudrate = 500;
@@ -80,7 +82,7 @@ void loop() {
 
 void CAN_reset(){
   CAN.reset();
-  CAN.setBitrate(Settings.Boudrate, MCP_8MHZ); // Change to correct Clock!
+  CAN.setBitrate(Settings.Boudrate, MCP_16MHZ); // Change to correct Clock!
   CAN.setNormalMode();
 }
 
@@ -112,13 +114,14 @@ void Config(){
     case 2: Settings.Position = menu_option_val_Int; Config();break;
     case 3: Settings.Bits = menu_option_val_Int; Config();break;
     case 4: Settings.Gain = menu_option_val_Float; Config();break;
-    case 5: Settings.ValMin = menu_option_val_Float; Config();break;
-    case 6: Settings.ValMax = menu_option_val_Float; Config();break;
-    case 7: Settings.Boudrate = menu_option_val_Int; CAN_reset(); Config();break;
-    case 8: Stepper_Drive(constrain(menu_option_val_Int,0,100)); Config();break;
-    case 9: CanDebug = !CanDebug; Config(); break;
-    case 10: ValDebug = !ValDebug; Config(); break;
-    case 11: EEPROM.put(0, Settings); Config(); Serial.println(":::::Saved:::::");break;
+    case 5: Settings.Offset = menu_option_val_Int; Config();break;
+    case 6: Settings.ValMin = menu_option_val_Float; Config();break;
+    case 7: Settings.ValMax = menu_option_val_Float; Config();break;
+    case 8: Settings.Boudrate = menu_option_val_Int; CAN_reset(); Config();break;
+    case 9: Stepper_Drive(constrain(menu_option_val_Int,0,100)); Config();break;
+    case 10: CanDebug = !CanDebug; Config(); break;
+    case 11: ValDebug = !ValDebug; Config(); break;
+    case 12: EEPROM.put(0, Settings); Config(); Serial.println(":::::Saved:::::");break;
     default:
       Serial_clear();
       Serial.print("Firmware: "); Serial.println(Firmware);
@@ -127,13 +130,17 @@ void Config(){
       Serial.print("[2]  Position:       ");Serial.println(Settings.Position);
       Serial.print("[3]  Bits:           ");Serial.println(Settings.Bits);
       Serial.print("[4]  Gain:           ");Serial.println(Settings.Gain);
-      Serial.print("[5]  Minimum:        ");Serial.println(Settings.ValMin);
-      Serial.print("[6]  Maximum:        ");Serial.println(Settings.ValMax);
-      Serial.print("[7]  Boud Rate (KB): ");Serial.println(Settings.Boudrate);
-      Serial.print("[8]  Gauge Test (%)");Serial.println();
-      Serial.print("[9]  CAN Test:       "+String(CanDebug?"ON":"OFF"));Serial.println();
-      Serial.print("[10] Value Test:     "+String(ValDebug?"ON":"OFF"));Serial.println();
-      Serial.print("[11] Safe Settings!");Serial.println();
+      Serial.print("[5]  Offset:         ");Serial.println(Settings.Offset);
+      Serial.print("[6]  Minimum:        ");Serial.println(Settings.ValMin);
+      Serial.print("[7]  Maximum:        ");Serial.println(Settings.ValMax);
+      Serial.print("[8]  Boud Rate (KB): ");Serial.println(Settings.Boudrate);
+      Serial.print("[9]  Gauge Test (%)");Serial.println();
+      Serial.print("[10] CAN Test:       "+String(CanDebug?"ON":"OFF"));Serial.println();
+      Serial.print("[11] Value Test:     "+String(ValDebug?"ON":"OFF"));Serial.println();
+      Serial.print("[12] Safe Settings!");Serial.println();
+      Serial.println();
+      Serial.println();
+      Serial.println("Result = (CAN Value x GAIN) + Offset");
       break;
   }
 }
@@ -192,7 +199,7 @@ void Can_Decode(can_frame canMsg){
       val = (val << 1) | ((tmp_val >> i) & 1);
     }
   }
-  val = val * Settings.Gain;
+  val = (val * Settings.Gain) + Settings.Offset;
   val = constrain(val, Settings.ValMin, Settings.ValMax);
 
   if(ValDebug){

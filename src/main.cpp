@@ -3,7 +3,7 @@
 #include <Stepper.h>
 #include <EEPROM.h>
 
-#define Firmware 240611
+#define Firmware 240620
 
 #define EEPROM_ConfVersion 5
 
@@ -64,8 +64,12 @@ void setup() {
     Settings.Boudrate = 500;
   }
   CAN_reset();
-  stepper.setSpeed(60);   // set the motor speed to 30 RPM (360 PPS aprox.).
-  stepper.step(-670);     // Reset Position.
+  stepper.setSpeed(50);   // set the motor speed to 30 RPM (360 PPS aprox.).
+  stepper.step(max_Steps);
+  delay(20);
+  stepper.step(-max_Steps);
+  //Stepper_Drive(100);
+  //Stepper_Drive(0);
   Serial.begin(115200);
   if(Serial){
     Config();
@@ -140,7 +144,7 @@ void Config(){
       Serial.print("[12] Safe Settings!");Serial.println();
       Serial.println();
       Serial.println();
-      Serial.println("Result = (CAN Value x GAIN) + Offset");
+      Serial.println("Result = (CAN Value x Gain) + Offset");
       break;
   }
 }

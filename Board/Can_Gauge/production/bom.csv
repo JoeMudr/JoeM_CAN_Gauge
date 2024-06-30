@@ -2,12 +2,14 @@
 "C1, C2, C3, C4, C5",0603,5,100nF,C14663
 C6,CP_Elec_6.3x7.7,1,220uF,C4747974
 "D1, D2, D3, D4, D5, D6",LED_PLCC_2835_Handsoldering,6,LED Weiß,C516134
-"D7, D8, D9",LED_PLCC_2835_Handsoldering,3,LED Rot,C2827311
+D10,D_SOD-123F,1,D,C64898
+"D7, D8, D9",LED_PLCC_2835_Handsoldering,3,LED Rot,C2843869
 J1,PinHeader_1x06_P2.54mm_Vertical,1,FTDI-Port,
 J2,PinHeader_1x02_P2.54mm_Vertical,1,CAN,
-J3,PinHeader_1x01_P2.54mm_Vertical,1,LED 12V,
 J4,PinHeader_1x01_P2.54mm_Vertical,1,12V,
 J5,PinHeader_1x01_P2.54mm_Vertical,1,GND,
+J6,PinHeader_1x02_P2.54mm_Vertical,1,12V_LED_Bridge,
+J7,PinHeader_2x03_P1.27mm_Vertical,1,SPI-Port,
 M1,StepperMotor,1,Stepper_Motor,
 "R1, R2, R6",0603,3,10k,C25804
 "R3, R4, R5",0805,3,510,C17734

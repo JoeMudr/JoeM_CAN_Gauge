@@ -1,0 +1,5 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "digikey-footprints")(type "KiCad")(uri "/home/joem/sketchbook/Kicad_Libs/digikey-kicad-library-master/digikey-footprints.pretty")(options "")(descr ""))
+  (lib (name "StepperMotor")(type "KiCad")(uri "/home/joem/sketchbook/Kicad_Libs/Stepper/StepperMotor.pretty")(options "")(descr ""))
+)

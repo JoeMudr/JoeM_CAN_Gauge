@@ -3,7 +3,7 @@
 #include <Stepper.h>
 #include <EEPROM.h>
 
-#define Firmware 240630
+#define Firmware 2400703
 
 #define EEPROM_ConfVersion 6
 
@@ -25,7 +25,7 @@ conf Settings;
 
 can_frame canMsg;
 MCP2515 CAN(10); // CS PIN 10
-#define MCP_Crystal MCP_8MHZ
+#define MCP_Crystal MCP_16MHZ
 
 #define STEPS  720    // steps per revolution (630 = limited to 315°)
 #define COIL1  6
@@ -68,8 +68,9 @@ void setup() {
     Settings.Boudrate = 500;
     Settings.AngleMin = 0;
     Settings.AngleMax = 315;
+    EEPROM.put(0, Settings);
+    Serial.println(":::Settings reset:::");
   }
-  EEPROM.put(0, Settings);
   CAN_reset();
   stepper.setSpeed(Stepper_speed);   // set the motor speed to 30 RPM (360 PPS aprox.).
   stepper.step(max_Steps);
@@ -152,7 +153,6 @@ void Config(){
       Serial.print("[13] Value Test:     "+String(ValDebug?"ON":"OFF"));Serial.println();
       Serial.print("[14] Safe Settings!");Serial.println();
       Serial.println();
-      Serial.println();
       Serial.println("Result = (CAN Value x Gain) + Offset");
       break;
   }
@@ -168,17 +168,6 @@ void Serial_clear(){
   
   // bunch of new lines
   //for (byte i = 0; i < 40; i++){Serial.println();}
-}
-
-// pass a value between 0 & max_Steps*360/STEPS (°).
-void Stepper_Drive(double _val){
-  int16_t rel_pos = 0;    
-
-  _val = _val * max_Steps / 360;
-  _val = constrain(_val,0,max_Steps);
-  rel_pos = round(_val)-abs_pos;
-  abs_pos = _val;
-  stepper.step(rel_pos);
 }
 
 void Can_Debug(can_frame canMsg){
@@ -236,4 +225,16 @@ void Can_Decode(can_frame canMsg){
   }
 
   Stepper_Drive(result);
+}
+
+// pass a value between 0 & max_Steps*360/STEPS (°).
+void Stepper_Drive(double _val){
+  int16_t rel_pos = 0;    
+
+  _val = _val * STEPS / 360;
+  _val = constrain(_val,0,max_Steps);
+  _val = round(_val);
+  rel_pos = _val - abs_pos;
+  abs_pos = _val;
+  stepper.step(rel_pos);
 }
